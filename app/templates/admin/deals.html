@@ -1,0 +1,50 @@
+{% extends "admin/base_admin.html" %}
+{% from "partials/macros.html" import vehicle_photo %}
+{% block admin_content %}
+<div class="page-head">
+  <div>
+    <h1>Deals from the market</h1>
+    <p class="muted">Scraped from {{ stats.deals }} live Pune listings. Only you see these. Spot a deal, buy it, then publish it.</p>
+  </div>
+</div>
+
+<form class="toolbar" method="get">
+  <select name="make" onchange="this.form.submit()">
+    <option value="">All makes</option>
+    {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
+  </select>
+  <select name="source" onchange="this.form.submit()">
+    <option value="">All sources</option>
+    {% for s in sources %}<option value="{{ s }}" {{ 'selected' if filters.source == s }}>{{ s }}</option>{% endfor %}
+  </select>
+  <select name="sort" onchange="this.form.submit()">
+    <option value="price_asc" {{ 'selected' if filters.sort == 'price_asc' }}>Price: low to high</option>
+    <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Price: high to low</option>
+    <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Newest first</option>
+  </select>
+</form>
+
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th></th><th>Vehicle</th><th>Year</th><th>KM</th><th>Fuel</th><th>Area</th><th>Source</th><th class="num">Asking</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for v in deals %}
+      <tr>
+        <td class="thumb-cell">{{ vehicle_photo(v, "photo-thumb") }}</td>
+        <td><strong>{{ v['make'] }} {{ v['model'] }}</strong><br><span class="muted small">{{ v['variant'] }}</span></td>
+        <td>{{ v['year'] }}</td>
+        <td>{{ v['km']|km }}</td>
+        <td>{{ v['fuel'] }}</td>
+        <td>{{ v['location'] }}</td>
+        <td><span class="src">{{ v['source'] }}</span></td>
+        <td class="num"><strong>{{ v['listed_price']|inr }}</strong></td>
+        <td><a class="btn-sm" href="{{ url_for('admin.deal', vid=v['id']) }}">Review &amp; buy</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not deals %}<div class="empty">No scraped deals yet. Go to Scrapers and run a scrape.</div>{% endif %}
+</div>
+{% endblock %}

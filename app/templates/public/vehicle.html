@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import vehicle_photo, spec_pills %}
+{% block title %}{{ v['year'] }} {{ v['make'] }} {{ v['model'] }} · {{ business_name }}{% endblock %}
+{% block body %}
+<header class="site-header">
+  <div class="container site-header-inner">
+    <a class="brand" href="{{ url_for('public.home') }}">{{ business_name }}</a>
+    <nav class="site-nav">
+      <a href="{{ url_for('public.home') }}">← All vehicles</a>
+      <a class="wa-link" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">WhatsApp us</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container detail">
+  <div class="detail-grid">
+    <div class="detail-main">
+      {% if photos %}
+      <div class="gallery">
+        <div class="gallery-main">
+          <img src="{{ url_for('static', filename='uploads/' + photos[0]['filename']) }}" alt="{{ v['title'] }}">
+        </div>
+        {% if photos|length > 1 %}
+        <div class="gallery-thumbs">
+          {% for p in photos %}
+          <img src="{{ url_for('static', filename='uploads/' + p['filename']) }}" alt=""
+               class="{{ 'active' if loop.first }}"
+               onclick="document.querySelector('.gallery-main img').src=this.src">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      {{ vehicle_photo(v, "photo-large") }}
+      {% endif %}
+      <h1 class="detail-title">{{ v['year'] }} {{ v['make'] }} {{ v['model'] }} <span>{{ v['variant'] }}</span></h1>
+      {{ spec_pills(v) }}
+
+      {% if v['description'] %}
+      <section class="detail-section">
+        <h2>About this vehicle</h2>
+        <p>{{ v['description'] }}</p>
+      </section>
+      {% endif %}
+
+      {% if v['work_required'] %}
+      <section class="detail-section work">
+        <h2>What needs doing (honest)</h2>
+        <p>{{ v['work_required'] }}</p>
+        <p class="muted small">Take it as-is at the lower price and sort this yourself, or pick "fixed &amp; ready" and we handle it before delivery.</p>
+      </section>
+      {% endif %}
+    </div>
+
+    <aside class="detail-side">
+      <div class="buy-box">
+        <div class="buy-option">
+          <span class="buy-label">Take it as-is</span>
+          <span class="buy-price">{{ v['as_is_price']|inr }}</span>
+          <span class="buy-note">You handle the listed work</span>
+        </div>
+        {% if v['fixed_price'] %}
+        <div class="buy-option buy-option-alt">
+          <span class="buy-label">Fixed &amp; ready</span>
+          <span class="buy-price">{{ v['fixed_price']|inr }}</span>
+          <span class="buy-note">We complete the work first</span>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('public.enquire', vid=v['id']) }}" class="enquiry-form">
+          <h3>Interested? Leave your number</h3>
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="tel" name="phone" placeholder="Phone number" required>
+          <select name="option_chosen">
+            <option value="as_is">I want it as-is ({{ v['as_is_price']|inr }})</option>
+            {% if v['fixed_price'] %}<option value="fixed">Fixed &amp; ready ({{ v['fixed_price']|inr }})</option>{% endif %}
+            <option value="unsure">Not sure yet, want to see it</option>
+          </select>
+          <textarea name="message" placeholder="Anything you want to ask? (optional)"></textarea>
+          <button type="submit" class="btn-primary">Send enquiry</button>
+        </form>
+        <a class="btn-whatsapp"
+           href="https://wa.me/{{ whatsapp_number }}?text=Hi, I'm interested in the {{ v['year'] }} {{ v['make'] }} {{ v['model'] }}"
+           target="_blank" rel="noopener">Or message on WhatsApp</a>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>{{ business_name }} · Pune</p>
+  </div>
+</footer>
+{% endblock %}

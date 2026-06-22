@@ -1,0 +1,62 @@
+{% extends "admin/base_admin.html" %}
+{% from "partials/macros.html" import vehicle_photo, spec_pills %}
+{% block admin_content %}
+<div class="page-head">
+  <div>
+    <a class="muted small" href="{{ url_for('admin.deals') }}">← Back to deals</a>
+    <h1>{{ v['year'] }} {{ v['make'] }} {{ v['model'] }}</h1>
+    <p class="muted">From {{ v['source'] }} ·
+      {% if v['source_url'] %}<a href="{{ v['source_url'] }}" target="_blank">original listing ↗</a>{% endif %}
+      · asking <strong>{{ v['listed_price']|inr }}</strong></p>
+  </div>
+</div>
+
+<div class="deal-grid">
+  <div>
+    {{ vehicle_photo(v, "photo-large") }}
+    {{ spec_pills(v) }}
+  </div>
+
+  <form method="post" action="{{ url_for('admin.publish', vid=v['id']) }}" class="publish-form card-panel" enctype="multipart/form-data">
+    <h2>Buy &amp; publish to your site</h2>
+    <p class="muted small">Confirm the details, set your prices, and it goes live for customers.</p>
+
+    <div class="field-row">
+      <label>Make<input name="make" value="{{ v['make'] or '' }}"></label>
+      <label>Model<input name="model" value="{{ v['model'] or '' }}"></label>
+    </div>
+    <div class="field-row">
+      <label>Variant<input name="variant" value="{{ v['variant'] or '' }}"></label>
+      <label>Year<input name="year" value="{{ v['year'] or '' }}"></label>
+    </div>
+    <div class="field-row">
+      <label>KM<input name="km" value="{{ v['km'] or '' }}"></label>
+      <label>Fuel<input name="fuel" value="{{ v['fuel'] or '' }}"></label>
+    </div>
+    <div class="field-row">
+      <label>Transmission<input name="transmission" value="{{ v['transmission'] or '' }}"></label>
+      <label>Owners<input name="owners" value="{{ v['owners'] or '' }}"></label>
+    </div>
+    <label>Area<input name="location" value="{{ v['location'] or '' }}"></label>
+
+    <hr>
+    <div class="field-row">
+      <label>What you paid (private)<input name="buy_price" type="number" placeholder="e.g. 510000"></label>
+      <label class="hl">As-is price (public)<input name="as_is_price" type="number" required placeholder="e.g. 545000"></label>
+    </div>
+    <label class="hl">Fixed &amp; ready price (public)<input name="fixed_price" type="number" placeholder="e.g. 575000"></label>
+    <label>What needs doing (shown honestly to buyers)
+      <textarea name="work_required" placeholder="e.g. Front tyres worn, AC needs a gas top-up"></textarea></label>
+    <label>Description
+      <textarea name="description" placeholder="Single owner, clean papers, no accident history..."></textarea></label>
+    <label class="checkbox"><input type="checkbox" name="featured"> Feature on the homepage</label>
+
+    <hr>
+    <label>Photos of the car (you can add more after)
+      <input type="file" name="photos" accept="image/*" multiple></label>
+    <p class="muted small">Upload your own photos of the actual car. If you skip this now, you'll be taken straight to the photo page after publishing.</p>
+
+    <button type="submit" class="btn-primary">Publish to public site</button>
+  </form>
+</div>
+{% endblock %}

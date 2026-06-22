@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body_class %}admin login-page{% endblock %}
+{% block body %}
+<div class="login-box">
+  <h1>{{ business_name }}</h1>
+  <p class="muted">Dealer console</p>
+  <form method="post">
+    <input type="password" name="password" placeholder="Password" autofocus required>
+    <button type="submit" class="btn-primary">Log in</button>
+  </form>
+  <p class="muted small">Default password is <code>admin</code> until you change it in <code>.env</code>.</p>
+</div>
+{% endblock %}

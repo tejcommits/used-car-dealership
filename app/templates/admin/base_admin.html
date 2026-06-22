@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block body_class %}admin{% endblock %}
+{% block body %}
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">{{ business_name }}<span>dealer console</span></div>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('admin.deals') }}" class="{{ 'active' if request.endpoint == 'admin.deals' }}">
+        Deals <span class="count">{{ stats.deals }}</span>
+      </a>
+      <a href="{{ url_for('admin.inventory') }}" class="{{ 'active' if request.endpoint == 'admin.inventory' }}">
+        My inventory <span class="count">{{ stats.published }}</span>
+      </a>
+      <a href="{{ url_for('admin.enquiries') }}" class="{{ 'active' if request.endpoint == 'admin.enquiries' }}">
+        Enquiries {% if stats.enquiries %}<span class="count count-hot">{{ stats.enquiries }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('admin.scrapers') }}" class="{{ 'active' if request.endpoint == 'admin.scrapers' }}">
+        Scrapers {% if stats.broken %}<span class="count count-bad">{{ stats.broken }}</span>{% endif %}
+      </a>
+    </nav>
+    <div class="sidebar-foot">
+      <a href="{{ url_for('public.home') }}" target="_blank">View public site ↗</a>
+      <a href="{{ url_for('admin.logout') }}">Log out</a>
+    </div>
+  </aside>
+  <main class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

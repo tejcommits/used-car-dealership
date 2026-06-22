@@ -1,0 +1,55 @@
+{% extends "admin/base_admin.html" %}
+{% from "partials/macros.html" import vehicle_photo %}
+{% block admin_content %}
+<div class="page-head">
+  <div>
+    <h1>My inventory</h1>
+    <p class="muted">Vehicles you've bought and listed. {{ stats.published }} live, {{ stats.sold }} sold.</p>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th></th><th>Vehicle</th><th>Bought</th><th class="num">As-is</th><th class="num">Fixed</th><th class="num">Margin</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for v in vehicles %}
+      <tr>
+        <td class="thumb-cell">{{ vehicle_photo(v, "photo-thumb", src=(url_for('static', filename='uploads/' + covers[v['id']]) if covers.get(v['id']) else none)) }}</td>
+        <td><strong>{{ v['year'] }} {{ v['make'] }} {{ v['model'] }}</strong><br><span class="muted small">{{ v['variant'] }} · {{ v['location'] }}</span></td>
+        <td>{{ v['buy_price']|inr }}</td>
+        <td class="num">{{ v['as_is_price']|inr }}</td>
+        <td class="num">{{ v['fixed_price']|inr }}</td>
+        <td class="num">
+          {% if v['buy_price'] and v['as_is_price'] %}
+            <span class="margin">+{{ (v['as_is_price'] - v['buy_price'])|inr }}</span>
+          {% else %}-{% endif %}
+        </td>
+        <td>
+          <span class="badge badge-{{ 'live' if v['status']=='published' else 'sold' }}">{{ v['status'] }}</span>
+        </td>
+        <td class="actions">
+          <a class="btn-sm btn-ghost" href="{{ url_for('admin.photos', vid=v['id']) }}">
+            Photos{% if counts.get(v['id']) %} ({{ counts[v['id']] }}){% else %} <span class="needs-photos">!</span>{% endif %}
+          </a>
+          {% if v['status'] == 'published' %}
+          <a class="btn-sm" href="{{ url_for('public.vehicle', vid=v['id']) }}" target="_blank">View</a>
+          <form method="post" action="{{ url_for('admin.set_status', vid=v['id']) }}" class="inline">
+            <input type="hidden" name="status" value="sold">
+            <button class="btn-sm btn-ghost">Mark sold</button>
+          </form>
+          {% else %}
+          <form method="post" action="{{ url_for('admin.set_status', vid=v['id']) }}" class="inline">
+            <input type="hidden" name="status" value="published">
+            <button class="btn-sm btn-ghost">Relist</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not vehicles %}<div class="empty">Nothing published yet. Buy a deal and publish it.</div>{% endif %}
+</div>
+{% endblock %}

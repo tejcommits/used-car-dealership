@@ -1,0 +1,41 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_content %}
+<div class="page-head">
+  <div>
+    <h1>Customer enquiries</h1>
+    <p class="muted">Leads from the public site. {{ stats.enquiries }} still to follow up.</p>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th>When</th><th>Name</th><th>Phone</th><th>Vehicle</th><th>Wants</th><th>Message</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for e in enquiries %}
+      <tr class="{{ 'done' if e['handled'] }}">
+        <td class="muted small">{{ e['created_at'][:16].replace('T',' ') }}</td>
+        <td><strong>{{ e['name'] }}</strong></td>
+        <td><a href="tel:{{ e['phone'] }}">{{ e['phone'] }}</a></td>
+        <td>{{ e['title'] }}</td>
+        <td>
+          {% if e['option_chosen'] == 'as_is' %}<span class="badge">As-is</span>
+          {% elif e['option_chosen'] == 'fixed' %}<span class="badge badge-live">Fixed</span>
+          {% else %}<span class="badge badge-muted">Unsure</span>{% endif %}
+        </td>
+        <td class="muted small">{{ e['message'] or '-' }}</td>
+        <td>
+          {% if not e['handled'] %}
+          <form method="post" action="{{ url_for('admin.mark_handled', eid=e['id']) }}" class="inline">
+            <button class="btn-sm btn-ghost">Mark done</button>
+          </form>
+          {% else %}<span class="muted small">✓ done</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not enquiries %}<div class="empty">No enquiries yet.</div>{% endif %}
+</div>
+{% endblock %}

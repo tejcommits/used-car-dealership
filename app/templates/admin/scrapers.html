@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_content %}
+<div class="page-head">
+  <div>
+    <h1>Scrapers</h1>
+    <p class="muted">Each Pune source and whether it's working. A broken one means its site changed or blocked us.</p>
+  </div>
+  <form method="post" action="{{ url_for('admin.run_scrapers') }}">
+    <button type="submit" class="btn-primary">Scrape now</button>
+  </form>
+</div>
+
+{% if stats.broken %}
+<div class="alert">{{ stats.broken }} source{{ 's' if stats.broken > 1 }} need attention. They'll keep retrying transient blocks on their own; a structural break needs a fix.</div>
+{% endif %}
+
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr><th>Source</th><th>Status</th><th class="num">Found</th><th class="num">Expected</th><th>Last run</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      {% for h in health %}
+      <tr>
+        <td><strong>{{ h['source'] }}</strong></td>
+        <td>
+          {% if h['status'] == 'ok' %}<span class="badge badge-live">working</span>
+          {% else %}<span class="badge badge-bad">broken</span>{% endif %}
+        </td>
+        <td class="num">{{ h['items_found'] }}</td>
+        <td class="num">{{ h['expected_min'] }}</td>
+        <td class="muted small">{{ (h['last_run'] or '-')[:16].replace('T',' ') }}</td>
+        <td class="muted small">{{ h['message'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

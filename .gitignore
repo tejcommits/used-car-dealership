@@ -1,0 +1,8 @@
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+venv/
+*.db
+.env
+__pycache__/
+.claude/
+app/static/seed_cars/

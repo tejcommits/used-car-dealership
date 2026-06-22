@@ -1,0 +1,36 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_content %}
+<div class="page-head">
+  <div>
+    <a class="muted small" href="{{ url_for('admin.inventory') }}">← Back to inventory</a>
+    <h1>Photos · {{ v['year'] }} {{ v['make'] }} {{ v['model'] }}</h1>
+    <p class="muted">The first photo is the cover buyers see on the listing.</p>
+  </div>
+  {% if v['status'] == 'published' %}
+  <a class="btn-sm" href="{{ url_for('public.vehicle', vid=v['id']) }}" target="_blank">View listing ↗</a>
+  {% endif %}
+</div>
+
+<form method="post" action="{{ url_for('admin.upload_photos', vid=v['id']) }}"
+      enctype="multipart/form-data" class="card-panel upload-panel">
+  <label>Add photos
+    <input type="file" name="photos" accept="image/*" multiple required></label>
+  <button type="submit" class="btn-primary">Upload</button>
+</form>
+
+{% if photos %}
+<div class="photo-manage-grid">
+  {% for p in photos %}
+  <div class="photo-tile">
+    <img src="{{ url_for('static', filename='uploads/' + p['filename']) }}" alt="">
+    {% if loop.first %}<span class="cover-tag">Cover</span>{% endif %}
+    <form method="post" action="{{ url_for('admin.delete_photo', pid=p['id']) }}">
+      <button class="btn-sm btn-ghost" type="submit">Delete</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty">No photos yet. Buyers will see a plain placeholder until you add some.</div>
+{% endif %}
+{% endblock %}

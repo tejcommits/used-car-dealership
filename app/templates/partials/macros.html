@@ -1,0 +1,26 @@
+{% macro vehicle_photo(v, klass="", src=None) %}
+  {% set img = src or v['image_url'] %}
+  {% if img %}
+    <div class="photo {{ klass }}">
+      <img src="{{ img }}" alt="{{ v['title'] }}"
+           onerror="this.parentNode.classList.add('photo-fallback');this.remove();">
+      <span class="photo-text">{{ v['make'] }} {{ v['model'] }}</span>
+    </div>
+  {% else %}
+    <div class="photo photo-fallback {{ klass }}">
+      <span class="photo-badge">{{ v['make'][:1] if v['make'] else '?' }}</span>
+      <span class="photo-text">{{ v['make'] }} {{ v['model'] }}</span>
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro spec_pills(v) %}
+  <div class="pills">
+    {% if v['year'] %}<span class="pill">{{ v['year'] }}</span>{% endif %}
+    {% if v['km'] %}<span class="pill">{{ v['km']|km }}</span>{% endif %}
+    {% if v['fuel'] %}<span class="pill">{{ v['fuel'] }}</span>{% endif %}
+    {% if v['transmission'] %}<span class="pill">{{ v['transmission'] }}</span>{% endif %}
+    {% if v['owners'] %}<span class="pill">{{ v['owners'] }} owner</span>{% endif %}
+    {% if v['location'] %}<span class="pill pill-muted">{{ v['location'] }}</span>{% endif %}
+  </div>
+{% endmacro %}

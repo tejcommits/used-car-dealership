@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import vehicle_photo, spec_pills %}
+{% block body %}
+<header class="site-header">
+  <div class="container site-header-inner">
+    <a class="brand" href="{{ url_for('public.home') }}">{{ business_name }}</a>
+    <nav class="site-nav">
+      <a href="#cars">Cars in stock</a>
+      <a class="wa-link" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">WhatsApp us</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <p class="hero-kicker">Hand-picked used cars &amp; bikes in Pune</p>
+    <h1 class="hero-title">Honest deals. We tell you exactly what's been done<br>and what still needs doing.</h1>
+    <p class="hero-sub">Every vehicle is inspected before it goes up. Take it as-is and save, or let us fix what's listed and hand it over ready to drive.</p>
+  </div>
+</section>
+
+<section class="filters" id="cars">
+  <div class="container">
+    <form class="filter-bar" method="get" action="{{ url_for('public.home') }}">
+      <input type="text" name="q" value="{{ filters.q }}" placeholder="Search Swift, City, Classic 350...">
+      <select name="make">
+        <option value="">Any make</option>
+        {% for m in makes %}
+          <option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>
+        {% endfor %}
+      </select>
+      <select name="fuel">
+        <option value="">Any fuel</option>
+        {% for f in ['Petrol','Diesel','CNG'] %}
+          <option value="{{ f }}" {{ 'selected' if filters.fuel == f }}>{{ f }}</option>
+        {% endfor %}
+      </select>
+      <select name="max_price">
+        <option value="">Any price</option>
+        <option value="300000" {{ 'selected' if filters.max_price == '300000' }}>Under ₹3 L</option>
+        <option value="500000" {{ 'selected' if filters.max_price == '500000' }}>Under ₹5 L</option>
+        <option value="800000" {{ 'selected' if filters.max_price == '800000' }}>Under ₹8 L</option>
+        <option value="1500000" {{ 'selected' if filters.max_price == '1500000' }}>Under ₹15 L</option>
+      </select>
+      <button type="submit">Search</button>
+    </form>
+  </div>
+</section>
+
+<main class="container">
+  {% if vehicles %}
+    <div class="grid">
+      {% for v in vehicles %}
+      <a class="card" href="{{ url_for('public.vehicle', vid=v['id']) }}">
+        {{ vehicle_photo(v, src=(url_for('static', filename='uploads/' + covers[v['id']]) if covers.get(v['id']) else none)) }}
+        <div class="card-body">
+          {% if v['featured'] %}<span class="tag tag-featured">Featured</span>{% endif %}
+          <h3 class="card-title">{{ v['year'] }} {{ v['make'] }} {{ v['model'] }}</h3>
+          <p class="card-variant">{{ v['variant'] }}</p>
+          {{ spec_pills(v) }}
+          <div class="card-price">
+            <div>
+              <span class="price-label">As-is from</span>
+              <span class="price">{{ v['as_is_price']|inr }}</span>
+            </div>
+            {% if v['fixed_price'] %}
+            <div class="price-alt">
+              <span class="price-label">Fixed &amp; ready</span>
+              <span class="price-small">{{ v['fixed_price']|inr }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">No vehicles match that. Try widening your filters.</div>
+  {% endif %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>{{ business_name }} · Pune · <a href="https://wa.me/{{ whatsapp_number }}">WhatsApp {{ whatsapp_number }}</a></p>
+    <p class="muted"><a href="{{ url_for('admin.login') }}">Dealer login</a></p>
+  </div>
+</footer>
+{% endblock %}
