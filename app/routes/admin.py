@@ -239,10 +239,31 @@ def scrapers():
 @login_required
 def run_scrapers():
     from ..scrapers.run import run_all
-    results = run_all(get_db())
-    ok = sum(1 for _, _, good, _ in results if good)
-    flash(f"Scrape finished. {ok} of {len(results)} sources OK. Check the table for any broken ones.", "success")
-    return redirect(url_for("admin.scrapers"))
+    f = request.form
+
+    filters = {}
+    if f.get("make", "").strip():
+        filters["make"] = f["make"].strip()
+    if f.get("fuel", "").strip():
+        filters["fuel"] = f["fuel"].strip()
+    for key in ("min_year", "max_year", "max_km", "min_price", "max_price", "max_per_source"):
+        v = _int(f.get(key))
+        if v is not None:
+            filters[key] = v
+    filters.setdefault("max_per_source", 60)
+
+    results = run_all(get_db(), filters)
+    saved = sum(n for _, n, _, _ in results)
+
+    bits = []
+    if filters.get("make"): bits.append(filters["make"])
+    if filters.get("min_year"): bits.append(f"{filters['min_year']}+")
+    if filters.get("max_km"): bits.append(f"under {filters['max_km']:,} km")
+    if filters.get("max_price"): bits.append(f"under ₹{filters['max_price']:,}")
+    crit = (" matching " + ", ".join(bits)) if bits else ""
+
+    flash(f"Pulled {saved} listing{'s' if saved != 1 else ''}{crit} into your deals.", "success")
+    return redirect(url_for("admin.deals"))
 
 
 def _stats(db):

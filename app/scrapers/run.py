@@ -10,7 +10,7 @@ from .sources import ALL_SOURCES
 from .health import report_broken
 
 
-def run_all(db=None):
+def run_all(db=None, filters=None):
     from ..db import get_db
 
     if db is None:
@@ -20,7 +20,7 @@ def run_all(db=None):
     for cls in ALL_SOURCES:
         scraper = cls()
         try:
-            saved, ok, error = scraper.run(db)
+            saved, ok, error = scraper.run(db, filters)
         except Exception as exc:
             saved, ok, error = 0, False, f"{type(exc).__name__}: {exc}"
         results.append((scraper.label, saved, ok, error))

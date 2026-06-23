@@ -5,9 +5,45 @@
     <h1>Scrapers</h1>
     <p class="muted">Each Pune source and whether it's working. A broken one means its site changed or blocked us.</p>
   </div>
-  <form method="post" action="{{ url_for('admin.run_scrapers') }}">
-    <button type="submit" class="btn-primary">Scrape now</button>
-  </form>
+  <button type="button" class="btn-primary" onclick="document.getElementById('scrapeModal').classList.add('open')">Scrape now</button>
+</div>
+
+<div class="modal-backdrop" id="scrapeModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Scrape listings</h2>
+      <button type="button" class="modal-x" onclick="document.getElementById('scrapeModal').classList.remove('open')">×</button>
+    </div>
+    <p class="muted small">Pull only the listings you want into your deals. Leave a field blank to ignore it.</p>
+    <form method="post" action="{{ url_for('admin.run_scrapers') }}" class="scrape-form">
+      <label>Make / model
+        <input name="make" placeholder="e.g. Mercedes, Swift — blank = all makes">
+      </label>
+      <div class="field-row">
+        <label>Year from<input name="min_year" type="number" placeholder="e.g. 2016"></label>
+        <label>Year to<input name="max_year" type="number" placeholder="e.g. 2024"></label>
+      </div>
+      <div class="field-row">
+        <label>Max KM driven<input name="max_km" type="number" placeholder="e.g. 60000"></label>
+        <label>Fuel
+          <select name="fuel">
+            <option value="">Any</option>
+            <option>Petrol</option><option>Diesel</option><option>Cng</option><option>Electric</option>
+          </select>
+        </label>
+      </div>
+      <div class="field-row">
+        <label>Min price ₹<input name="min_price" type="number" placeholder="e.g. 300000"></label>
+        <label>Max price ₹<input name="max_price" type="number" placeholder="e.g. 1500000"></label>
+      </div>
+      <label>Max per source<input name="max_per_source" type="number" value="60"></label>
+      <div class="modal-actions">
+        <button type="button" class="btn-sm btn-ghost" onclick="document.getElementById('scrapeModal').classList.remove('open')">Cancel</button>
+        <button type="submit" class="btn-primary">Scrape now</button>
+      </div>
+      <p class="muted small">This fetches live from every working source and may take 20–40 seconds.</p>
+    </form>
+  </div>
 </div>
 
 {% if stats.broken %}

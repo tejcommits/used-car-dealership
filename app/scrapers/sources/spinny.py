@@ -26,8 +26,9 @@ class SpinnyScraper(BaseScraper):
     def parse(self, html, url):
         return []
 
-    def run(self, db):
+    def run(self, db, filters=None):
         from ...db import upsert_vehicle
+        from ..base import match_filters
 
         rows, error = [], None
         try:
@@ -45,15 +46,21 @@ class SpinnyScraper(BaseScraper):
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
 
+        cap = (filters or {}).get("max_per_source")
         saved = 0
         for row in rows:
             if not row.get("external_id"):
                 continue
+            if not match_filters(row, filters):
+                continue
             upsert_vehicle(db, row)
             saved += 1
+            if cap and saved >= cap:
+                break
 
-        ok = error is None and saved >= self.expected_min
-        record_health(db, self.name, ok, saved, self.expected_min,
+        fetched = len(rows)
+        ok = error is None and fetched >= self.expected_min
+        record_health(db, self.name, ok, fetched, self.expected_min,
                        error or ("ok" if ok else "returned fewer rows than expected"))
         db.commit()
         return saved, ok, error
