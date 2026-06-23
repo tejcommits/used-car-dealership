@@ -48,30 +48,48 @@ def logout():
 @login_required
 def deals():
     db = get_db()
-    make = request.args.get("make", "").strip()
-    source = request.args.get("source", "").strip()
-    sort = request.args.get("sort", "price_asc")
+    a = request.args
+    f = {k: a.get(k, "").strip() for k in
+         ("make", "source", "fuel", "area", "sort", "min_year", "max_km", "max_price")}
 
     sql = "SELECT * FROM vehicles WHERE status='scraped'"
     params = []
-    if make:
-        sql += " AND make=?"; params.append(make)
-    if source:
-        sql += " AND source=?"; params.append(source)
+    if f["make"]:
+        sql += " AND make=?"; params.append(f["make"])
+    if f["source"]:
+        sql += " AND source=?"; params.append(f["source"])
+    if f["fuel"]:
+        sql += " AND fuel=?"; params.append(f["fuel"])
+    if f["area"]:
+        sql += " AND location=?"; params.append(f["area"])
+    if f["min_year"].isdigit():
+        sql += " AND year >= ?"; params.append(int(f["min_year"]))
+    if f["max_km"].isdigit():
+        sql += " AND km IS NOT NULL AND km <= ?"; params.append(int(f["max_km"]))
+    if f["max_price"].isdigit():
+        sql += " AND listed_price <= ?"; params.append(int(f["max_price"]))
     sql += " ORDER BY " + {
-        "price_asc": "listed_price ASC",
-        "price_desc": "listed_price DESC",
-        "newest": "scraped_at DESC",
-    }.get(sort, "listed_price ASC")
+        "price_asc": "listed_price ASC", "price_desc": "listed_price DESC",
+        "year_desc": "year DESC", "year_asc": "year ASC",
+        "km_asc": "km ASC", "newest": "scraped_at DESC",
+    }.get(f["sort"], "listed_price ASC")
 
     deals = db.execute(sql, params).fetchall()
-    makes = [r["make"] for r in db.execute(
-        "SELECT DISTINCT make FROM vehicles WHERE status='scraped' ORDER BY make").fetchall()]
-    sources = [r["source"] for r in db.execute(
-        "SELECT DISTINCT source FROM vehicles WHERE status='scraped' ORDER BY source").fetchall()]
-    stats = _stats(db)
-    return render_template("admin/deals.html", deals=deals, makes=makes, sources=sources,
-                           stats=stats, filters={"make": make, "source": source, "sort": sort})
+
+    def distinct(col):
+        return [r[0] for r in db.execute(
+            f"SELECT DISTINCT {col} FROM vehicles WHERE status='scraped' "
+            f"AND {col} IS NOT NULL AND {col} != '' ORDER BY {col}").fetchall()]
+
+    b = db.execute("SELECT MIN(listed_price), MAX(listed_price), MIN(year), MAX(year) "
+                   "FROM vehicles WHERE status='scraped'").fetchone()
+    bounds = {"pmin": b[0] or 0, "pmax": b[1] or 2000000,
+              "ymin": b[2] or 2008, "ymax": b[3] or 2026}
+
+    return render_template("admin/deals.html", deals=deals,
+                           makes=distinct("make"), sources=distinct("source"),
+                           fuels=distinct("fuel"), areas=distinct("location"),
+                           bounds=bounds, filters=f, stats=_stats(db))
 
 
 @bp.route("/deal/<int:vid>")

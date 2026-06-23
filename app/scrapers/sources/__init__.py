@@ -1,24 +1,24 @@
-"""Registry of all source scrapers.
+"""Registry of the locked, working source scrapers.
 
-To add a source: create a module here with a Scraper subclass and add it to
-ALL_SOURCES below. Nothing else in the app needs to change.
+Six verified Pune sources. Three scrape directly (free); three go through Apify
+(need APIFY_TOKEN). Cars24 and Droom were dropped — Cars24's actor is broken
+and Droom blocks the renderer; neither returned usable data in testing.
+
+  Direct:  Spinny, CarWale, CarDekho
+  Apify:   OLX, Facebook, CarTrade
 """
-from .olx import OlxScraper
-from .cars24 import Cars24Scraper
 from .spinny import SpinnyScraper
 from .carwale import CarWaleScraper
 from .cardekho import CarDekhoScraper
-from .quikr import QuikrScraper
+from .olx import OlxScraper
 from .facebook import FacebookScraper
-from .teambhp import TeamBhpScraper
+from .cartrade import CarTradeScraper
 
 ALL_SOURCES = [
-    OlxScraper,
-    Cars24Scraper,
     SpinnyScraper,
     CarWaleScraper,
     CarDekhoScraper,
-    QuikrScraper,
+    OlxScraper,
     FacebookScraper,
-    TeamBhpScraper,
+    CarTradeScraper,
 ]

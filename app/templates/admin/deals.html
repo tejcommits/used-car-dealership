@@ -4,25 +4,65 @@
 <div class="page-head">
   <div>
     <h1>Deals from the market</h1>
-    <p class="muted">Scraped from {{ stats.deals }} live Pune listings. Only you see these. Spot a deal, buy it, then publish it.</p>
+    <p class="muted">{{ deals|length }} listing{{ 's' if deals|length != 1 }} shown · {{ stats.deals }} scraped across your sources.</p>
   </div>
 </div>
 
-<form class="toolbar" method="get">
-  <select name="make" onchange="this.form.submit()">
-    <option value="">All makes</option>
-    {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
-  </select>
-  <select name="source" onchange="this.form.submit()">
-    <option value="">All sources</option>
-    {% for s in sources %}<option value="{{ s }}" {{ 'selected' if filters.source == s }}>{{ s }}</option>{% endfor %}
-  </select>
-  <select name="sort" onchange="this.form.submit()">
-    <option value="price_asc" {{ 'selected' if filters.sort == 'price_asc' }}>Price: low to high</option>
-    <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Price: high to low</option>
-    <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Newest first</option>
-  </select>
+<form class="filters-bar" method="get" id="dealFilters">
+  <div class="filter-line">
+    <select name="make" onchange="this.form.submit()">
+      <option value="">All makes</option>
+      {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
+    </select>
+    <select name="fuel" onchange="this.form.submit()">
+      <option value="">Any fuel</option>
+      {% for x in fuels %}<option value="{{ x }}" {{ 'selected' if filters.fuel == x }}>{{ x }}</option>{% endfor %}
+    </select>
+    <select name="area" onchange="this.form.submit()">
+      <option value="">All areas</option>
+      {% for x in areas %}<option value="{{ x }}" {{ 'selected' if filters.area == x }}>{{ x }}</option>{% endfor %}
+    </select>
+    <select name="source" onchange="this.form.submit()">
+      <option value="">All sources</option>
+      {% for s in sources %}<option value="{{ s }}" {{ 'selected' if filters.source == s }}>{{ s }}</option>{% endfor %}
+    </select>
+    <select name="sort" onchange="this.form.submit()">
+      <option value="price_asc" {{ 'selected' if filters.sort == 'price_asc' }}>Price: low → high</option>
+      <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Price: high → low</option>
+      <option value="year_desc" {{ 'selected' if filters.sort == 'year_desc' }}>Year: newest</option>
+      <option value="year_asc" {{ 'selected' if filters.sort == 'year_asc' }}>Year: oldest</option>
+      <option value="km_asc" {{ 'selected' if filters.sort == 'km_asc' }}>KM: lowest</option>
+      <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Recently scraped</option>
+    </select>
+  </div>
+  <div class="filter-line range-line">
+    <div class="rng">
+      <span class="rng-head">Year from <b id="r_min_year">Any</b></span>
+      <input type="range" name="min_year" id="f_min_year" min="{{ bounds.ymin }}" max="{{ bounds.ymax }}" step="1"
+             value="{{ filters.min_year or bounds.ymin }}" data-any="{{ bounds.ymin }}" oninput="rng('min_year')">
+    </div>
+    <div class="rng">
+      <span class="rng-head">Max KM <b id="r_max_km">Any</b></span>
+      <input type="range" name="max_km" id="f_max_km" min="10000" max="200000" step="5000"
+             value="{{ filters.max_km or 200000 }}" data-any="200000" oninput="rng('max_km')">
+    </div>
+    <div class="rng">
+      <span class="rng-head">Max price <b id="r_max_price">Any</b></span>
+      <input type="range" name="max_price" id="f_max_price" min="{{ bounds.pmin }}" max="{{ bounds.pmax }}" step="50000"
+             value="{{ filters.max_price or bounds.pmax }}" data-any="{{ bounds.pmax }}" oninput="rng('max_price')">
+    </div>
+    <button type="submit" class="btn-sm">Apply</button>
+    <a class="btn-sm btn-ghost" href="{{ url_for('admin.deals') }}">Clear</a>
+  </div>
 </form>
+<script>
+  function inrShort(n){ n=+n; if(n>=10000000) return '₹'+(n/10000000).toFixed(2).replace(/\.?0+$/,'')+'Cr'; if(n>=100000) return '₹'+(n/100000).toFixed(2).replace(/\.?0+$/,'')+'L'; return '₹'+n.toLocaleString('en-IN'); }
+  function rng(name){ const s=document.getElementById('f_'+name), o=document.getElementById('r_'+name); const v=+s.value, any=s.dataset.any;
+    if(v==+any){ o.textContent='Any'; } else if(name=='max_price'){ o.textContent=inrShort(v); } else if(name=='max_km'){ o.textContent=v.toLocaleString('en-IN')+' km'; } else { o.textContent=v; } }
+  document.getElementById('dealFilters').addEventListener('submit',function(){
+    ['min_year','max_km','max_price'].forEach(n=>{ const s=document.getElementById('f_'+n); if(s && +s.value==+s.dataset.any) s.disabled=true; }); });
+  ['min_year','max_km','max_price'].forEach(rng);
+</script>
 
 <div class="table-wrap">
   <table class="data-table">
