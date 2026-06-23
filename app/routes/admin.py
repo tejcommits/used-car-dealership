@@ -232,7 +232,20 @@ def trends():
 def scrapers():
     db = get_db()
     health = db.execute("SELECT * FROM scraper_health ORDER BY status DESC, source").fetchall()
-    return render_template("admin/scrapers.html", health=health, stats=_stats(db))
+
+    # Feed the Scrape dialog real makes/models so they become typo-proof dropdowns.
+    rows = db.execute(
+        "SELECT DISTINCT make, model FROM vehicles WHERE make IS NOT NULL AND model IS NOT NULL ORDER BY make, model"
+    ).fetchall()
+    makes = sorted({r["make"] for r in rows})
+    models_by_make = {}
+    for r in rows:
+        models_by_make.setdefault(r["make"], [])
+        if r["model"] not in models_by_make[r["make"]]:
+            models_by_make[r["make"]].append(r["model"])
+
+    return render_template("admin/scrapers.html", health=health, stats=_stats(db),
+                           makes=makes, models_by_make=models_by_make)
 
 
 @bp.route("/scrapers/run", methods=["POST"])
@@ -244,6 +257,8 @@ def run_scrapers():
     filters = {}
     if f.get("make", "").strip():
         filters["make"] = f["make"].strip()
+    if f.get("model", "").strip():
+        filters["model"] = f["model"].strip()
     if f.get("fuel", "").strip():
         filters["fuel"] = f["fuel"].strip()
     for key in ("min_year", "max_year", "max_km", "min_price", "max_price", "max_per_source"):

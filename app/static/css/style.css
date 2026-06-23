@@ -270,6 +270,13 @@ code { background: #eef1f5; padding: 1px 6px; border-radius: 5px; font-size: 13p
 .scrape-form input, .scrape-form select { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; font-size: 14px; font-family: inherit; font-weight: 400; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
 .modal-actions .btn-primary { padding: 10px 20px; }
+.slider-row { display: grid; gap: 6px; }
+.slider-head { display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.slider-hint { font-weight: 700; color: var(--navy); font-size: 13px; }
+.slider-line { display: flex; align-items: center; gap: 12px; }
+.slider-line input[type=range] { flex: 1; accent-color: #8b46c9; height: 22px; }
+.slider-box { width: 96px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; text-align: right; }
+.scrape-form select { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; font-size: 14px; font-family: inherit; background: #fff; }
 
 /* responsive */
 @media (max-width: 860px) {

@@ -112,6 +112,10 @@ def match_filters(row, filters):
         if make.lower() not in rm and make.lower() not in rmodel:
             return False
 
+    model = filters.get("model")
+    if model and model.lower() not in (row.get("model") or "").lower():
+        return False
+
     fuel = filters.get("fuel")
     if fuel and (row.get("fuel") or "").lower() != fuel.lower():
         return False

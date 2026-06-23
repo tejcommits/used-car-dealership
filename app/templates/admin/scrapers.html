@@ -15,34 +15,108 @@
       <button type="button" class="modal-x" onclick="document.getElementById('scrapeModal').classList.remove('open')">×</button>
     </div>
     <p class="muted small">Pull only the listings you want into your deals. Leave a field blank to ignore it.</p>
-    <form method="post" action="{{ url_for('admin.run_scrapers') }}" class="scrape-form">
-      <label>Make / model
-        <input name="make" placeholder="e.g. Mercedes, Swift — blank = all makes">
-      </label>
+    <form method="post" action="{{ url_for('admin.run_scrapers') }}" class="scrape-form" id="scrapeForm">
       <div class="field-row">
-        <label>Year from<input name="min_year" type="number" placeholder="e.g. 2016"></label>
-        <label>Year to<input name="max_year" type="number" placeholder="e.g. 2024"></label>
-      </div>
-      <div class="field-row">
-        <label>Max KM driven<input name="max_km" type="number" placeholder="e.g. 60000"></label>
-        <label>Fuel
-          <select name="fuel">
-            <option value="">Any</option>
-            <option>Petrol</option><option>Diesel</option><option>Cng</option><option>Electric</option>
+        <label>Make
+          <select name="make" id="f_make" onchange="onMakeChange()">
+            <option value="">All makes</option>
+            {% for m in makes %}<option>{{ m }}</option>{% endfor %}
           </select>
         </label>
+        <label>Model
+          <select name="model" id="f_model"><option value="">Any model</option></select>
+        </label>
       </div>
-      <div class="field-row">
-        <label>Min price ₹<input name="min_price" type="number" placeholder="e.g. 300000"></label>
-        <label>Max price ₹<input name="max_price" type="number" placeholder="e.g. 1500000"></label>
+      <label>Fuel
+        <select name="fuel">
+          <option value="">Any fuel</option>
+          <option>Petrol</option><option>Diesel</option><option>Cng</option><option>Electric</option>
+        </select>
+      </label>
+
+      <div class="slider-row">
+        <div class="slider-head"><span>Year from</span><span class="slider-hint" id="h_min_year">Any</span></div>
+        <div class="slider-line">
+          <input type="range" name="min_year" id="s_min_year" min="2008" max="2026" step="1" value="2008" data-any="2008" oninput="syncS('min_year')">
+          <input type="number" class="slider-box" id="b_min_year" min="2008" max="2026" value="2008" oninput="syncB('min_year')">
+        </div>
       </div>
-      <label>Max per source<input name="max_per_source" type="number" value="60"></label>
+
+      <div class="slider-row">
+        <div class="slider-head"><span>Year up to</span><span class="slider-hint" id="h_max_year">Any</span></div>
+        <div class="slider-line">
+          <input type="range" name="max_year" id="s_max_year" min="2008" max="2026" step="1" value="2026" data-any="2026" oninput="syncS('max_year')">
+          <input type="number" class="slider-box" id="b_max_year" min="2008" max="2026" value="2026" oninput="syncB('max_year')">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head"><span>Max KM driven</span><span class="slider-hint" id="h_max_km">Any</span></div>
+        <div class="slider-line">
+          <input type="range" name="max_km" id="s_max_km" min="10000" max="200000" step="5000" value="200000" data-any="200000" oninput="syncS('max_km')">
+          <input type="number" class="slider-box" id="b_max_km" min="0" max="200000" step="1000" value="200000" oninput="syncB('max_km')">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head"><span>Min price</span><span class="slider-hint" id="h_min_price">Any</span></div>
+        <div class="slider-line">
+          <input type="range" name="min_price" id="s_min_price" min="0" max="10000000" step="50000" value="0" data-any="0" oninput="syncS('min_price')">
+          <input type="number" class="slider-box" id="b_min_price" min="0" max="10000000" step="50000" value="0" oninput="syncB('min_price')">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head"><span>Max price (budget)</span><span class="slider-hint" id="h_max_price">Any</span></div>
+        <div class="slider-line">
+          <input type="range" name="max_price" id="s_max_price" min="100000" max="10000000" step="50000" value="10000000" data-any="10000000" oninput="syncS('max_price')">
+          <input type="number" class="slider-box" id="b_max_price" min="0" max="10000000" step="50000" value="10000000" oninput="syncB('max_price')">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head"><span>Max per source</span><span class="slider-hint" id="h_max_per_source">60</span></div>
+        <div class="slider-line">
+          <input type="range" name="max_per_source" id="s_max_per_source" min="10" max="120" step="10" value="60" oninput="syncS('max_per_source')">
+          <input type="number" class="slider-box" id="b_max_per_source" min="10" max="120" step="10" value="60" oninput="syncB('max_per_source')">
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-sm btn-ghost" onclick="document.getElementById('scrapeModal').classList.remove('open')">Cancel</button>
         <button type="submit" class="btn-primary">Scrape now</button>
       </div>
-      <p class="muted small">This fetches live from every working source and may take 20–40 seconds.</p>
+      <p class="muted small">Fetches live from every working source and may take 20–40 seconds.</p>
     </form>
+    <script>
+      const SCRAPE_MODELS = {{ models_by_make|tojson }};
+      function onMakeChange(){
+        const mk=document.getElementById('f_make').value, sel=document.getElementById('f_model');
+        sel.innerHTML='<option value="">Any model</option>';
+        (SCRAPE_MODELS[mk]||[]).forEach(m=>{const o=document.createElement('option');o.textContent=m;sel.appendChild(o);});
+      }
+      function inr(n){ n=+n;
+        if(n>=10000000) return '₹'+(n/10000000).toFixed(2).replace(/\.?0+$/,'')+' Cr';
+        if(n>=100000) return '₹'+(n/100000).toFixed(2).replace(/\.?0+$/,'')+' L';
+        return '₹'+n.toLocaleString('en-IN'); }
+      function hint(name){
+        const s=document.getElementById('s_'+name), h=document.getElementById('h_'+name);
+        if(!h) return; const v=+s.value, any=s.dataset.any;
+        if(any!==undefined && v==+any){ h.textContent='Any'; return; }
+        if(name.indexOf('price')>=0) h.textContent=inr(v);
+        else if(name==='max_km') h.textContent=v.toLocaleString('en-IN')+' km';
+        else h.textContent=v;
+      }
+      function syncS(name){ document.getElementById('b_'+name).value=document.getElementById('s_'+name).value; hint(name); }
+      function syncB(name){ const s=document.getElementById('s_'+name), b=document.getElementById('b_'+name);
+        let v=Math.max(+s.min, Math.min(+s.max, +b.value||+s.min)); s.value=v; hint(name); }
+      const SCRAPE_FIELDS=['min_year','max_year','max_km','min_price','max_price','max_per_source'];
+      document.getElementById('scrapeForm').addEventListener('submit',function(){
+        SCRAPE_FIELDS.forEach(n=>{ const s=document.getElementById('s_'+n), b=document.getElementById('b_'+n);
+          if(s && s.dataset.any!==undefined && +s.value==+s.dataset.any){ s.disabled=true; if(b)b.disabled=true; } });
+      });
+      SCRAPE_FIELDS.forEach(hint);
+    </script>
   </div>
 </div>
 
