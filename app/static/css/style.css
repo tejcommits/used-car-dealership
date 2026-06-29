@@ -298,6 +298,14 @@ code { background: #eef1f5; padding: 1px 6px; border-radius: 5px; font-size: 13p
 .slider-line input[type=range] { flex: 1; accent-color: #8b46c9; height: 22px; }
 .slider-box { width: 96px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; text-align: right; }
 .scrape-form select { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; font-size: 14px; font-family: inherit; background: #fff; }
+#scrapeProgress { padding: 8px 2px 4px; }
+.progress-track { height: 12px; border-radius: 20px; background: #eef1f5; overflow: hidden; }
+.progress-bar { height: 100%; width: 0; background: var(--brand-grad); border-radius: 20px; transition: width .5s ease; }
+.prog-text { font-size: 14px; color: var(--ink-soft); margin: 12px 0 4px; font-weight: 600; }
+.prog-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.prog-row span:first-child { color: var(--ink-soft); }
+.prog-row b { color: var(--green); }
+.prog-fail { color: var(--muted); font-size: 13px; }
 
 /* responsive */
 @media (max-width: 860px) {

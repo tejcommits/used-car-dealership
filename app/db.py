@@ -74,6 +74,18 @@ CREATE TABLE IF NOT EXISTS vehicle_photos (
     FOREIGN KEY(vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS scrape_jobs (
+    id            TEXT PRIMARY KEY,
+    status        TEXT,                  -- running | done | error
+    total_sources INTEGER,
+    done_sources  INTEGER DEFAULT 0,
+    current       TEXT,
+    new_listings  INTEGER DEFAULT 0,
+    summary       TEXT,                  -- JSON list of per-source results
+    started_at    TEXT,
+    finished_at   TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_vehicles_status ON vehicles(status);
 CREATE INDEX IF NOT EXISTS idx_vehicles_makemodel ON vehicles(make, model);
 CREATE INDEX IF NOT EXISTS idx_photos_vehicle ON vehicle_photos(vehicle_id, position);
@@ -85,6 +97,7 @@ def get_db():
         g.db = sqlite3.connect(current_app.config["DATABASE"])
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys = ON")
+        g.db.execute("PRAGMA busy_timeout = 8000")
     return g.db
 
 

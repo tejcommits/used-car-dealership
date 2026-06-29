@@ -8,10 +8,13 @@ Four areas:
 """
 import os
 import uuid
+import json
+import sqlite3
+import threading
 from functools import wraps
 from flask import (
     Blueprint, render_template, request, redirect, url_for, session, flash, abort,
-    current_app,
+    current_app, jsonify,
 )
 from werkzeug.utils import secure_filename
 from ..db import get_db, now, photos_for
@@ -272,7 +275,9 @@ def scrapers():
 @bp.route("/scrapers/run", methods=["POST"])
 @login_required
 def run_scrapers():
-    from ..scrapers.run import run_all
+    """Start a scrape in the background and return a job id. The dialog polls
+    /scrapers/status/<id> for live progress so the request never blocks."""
+    from ..scrapers.sources import ALL_SOURCES
     f = request.form
 
     filters = {}
@@ -288,18 +293,67 @@ def run_scrapers():
             filters[key] = v
     filters.setdefault("max_per_source", 60)
 
-    results = run_all(get_db(), filters)
-    saved = sum(n for _, n, _, _ in results)
+    job_id = uuid.uuid4().hex
+    db = get_db()
+    db.execute("INSERT INTO scrape_jobs (id, status, total_sources, done_sources, new_listings, started_at) "
+               "VALUES (?,?,?,?,?,?)", (job_id, "running", len(ALL_SOURCES), 0, 0, now()))
+    db.commit()
 
-    bits = []
-    if filters.get("make"): bits.append(filters["make"])
-    if filters.get("min_year"): bits.append(f"{filters['min_year']}+")
-    if filters.get("max_km"): bits.append(f"under {filters['max_km']:,} km")
-    if filters.get("max_price"): bits.append(f"under ₹{filters['max_price']:,}")
-    crit = (" matching " + ", ".join(bits)) if bits else ""
+    db_path = current_app.config["DATABASE"]
+    threading.Thread(target=_scrape_worker, args=(db_path, job_id, filters), daemon=True).start()
+    return jsonify({"job_id": job_id})
 
-    flash(f"Pulled {saved} listing{'s' if saved != 1 else ''}{crit} into your deals.", "success")
-    return redirect(url_for("admin.deals"))
+
+@bp.route("/scrapers/status/<job_id>")
+@login_required
+def scrape_status(job_id):
+    r = get_db().execute("SELECT * FROM scrape_jobs WHERE id=?", (job_id,)).fetchone()
+    if not r:
+        abort(404)
+    return jsonify({
+        "status": r["status"], "done": r["done_sources"], "total": r["total_sources"],
+        "current": r["current"], "new": r["new_listings"],
+        "summary": json.loads(r["summary"] or "[]"),
+    })
+
+
+def _scrape_worker(db_path, job_id, filters):
+    """Runs in a background thread with its own DB connection."""
+    from ..scrapers.sources import ALL_SOURCES
+
+    conn = sqlite3.connect(db_path, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA busy_timeout = 8000")
+
+    def count():
+        return conn.execute("SELECT COUNT(*) FROM vehicles WHERE status='scraped'").fetchone()[0]
+
+    summary, total_new = [], 0
+    try:
+        for i, cls in enumerate(ALL_SOURCES):
+            s = cls()
+            conn.execute("UPDATE scrape_jobs SET current=?, done_sources=? WHERE id=?", (s.label, i, job_id))
+            conn.commit()
+            before = count()
+            try:
+                _, ok, err = s.run(conn, filters)
+            except Exception as exc:
+                ok, err = False, f"{type(exc).__name__}: {exc}"
+            new = max(0, count() - before)
+            total_new += new
+            summary.append({"source": s.label, "new": new, "ok": bool(ok), "error": err})
+            conn.execute("UPDATE scrape_jobs SET done_sources=?, new_listings=?, summary=? WHERE id=?",
+                         (i + 1, total_new, json.dumps(summary), job_id))
+            conn.commit()
+        conn.execute("UPDATE scrape_jobs SET status='done', current=NULL, finished_at=? WHERE id=?",
+                     (now(), job_id))
+        conn.commit()
+    except Exception as exc:
+        conn.execute("UPDATE scrape_jobs SET status='error', summary=? WHERE id=?",
+                     (json.dumps([{"source": "—", "error": str(exc)}]), job_id))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def _stats(db):
