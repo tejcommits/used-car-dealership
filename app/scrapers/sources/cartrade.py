@@ -73,7 +73,7 @@ class CarTradeScraper(BaseScraper):
         for row in rows:
             if not row.get("external_id") or not match_filters(row, filters):
                 continue
-            from ..db import upsert_vehicle
+            from ...db import upsert_vehicle
             upsert_vehicle(db, row)
             saved += 1
             if saved >= cap:

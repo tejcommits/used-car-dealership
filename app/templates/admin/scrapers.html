@@ -163,9 +163,18 @@
           } else { t.textContent='Something went wrong during the scrape.'; }
         }).catch(()=>setTimeout(()=>pollScrape(job),2000));
       }
+      function scrapeReason(s){
+        const e=(s.error||'').toLowerCase();
+        if(e.includes('apify_token')||e.includes('not set')) return 'Apify not connected';
+        if(e.includes('credit')||e.includes('usage')||e.includes('exceeded')||e.includes('limit')) return 'Apify credit limit reached';
+        if(e.includes('timeout')||e.includes('timed out')) return 'timed out — site too slow';
+        if(e.includes('block')||e.includes('403')||e.includes('forbidden')) return 'blocked by the source';
+        if(e.includes('fewer')||e.includes('returned')) return 'no results this run';
+        return s.error ? s.error.slice(0,46) : 'unavailable';
+      }
       function renderScrapeSummary(d){
         const rows=(d.summary||[]).map(s=> '<div class="prog-row"><span>'+s.source+'</span><span>'+
-          (s.ok?'<b>+'+s.new+'</b> new':'<span class="prog-fail">unavailable</span>')+'</span></div>').join('');
+          (s.ok?'<b>+'+s.new+'</b> new':'<span class="prog-fail" title="'+(s.error||'')+'">'+scrapeReason(s)+'</span>')+'</span></div>').join('');
         document.getElementById('progSummary').innerHTML = rows +
           '<p class="muted small" style="margin-top:10px">Market trends refreshed with the new data.</p>' +
           '<div class="modal-actions"><a class="btn-primary" href="'+DEALS_URL+'">View deals →</a></div>';
@@ -181,7 +190,7 @@
 <div class="table-wrap">
   <table class="data-table">
     <thead>
-      <tr><th>Source</th><th>Status</th><th class="num">Found</th><th class="num">Expected</th><th>Last run</th><th>Note</th></tr>
+      <tr><th>Source</th><th>Status</th><th class="num">Found</th><th>Last worked</th><th>Last run</th><th>Note</th></tr>
     </thead>
     <tbody>
       {% for h in health %}
@@ -192,7 +201,7 @@
           {% else %}<span class="badge badge-bad">broken</span>{% endif %}
         </td>
         <td class="num" data-label="Found">{{ h['items_found'] }}</td>
-        <td class="num" data-label="Expected">{{ h['expected_min'] }}</td>
+        <td class="muted small" data-label="Last worked">{{ h['last_ok_at']|ago if h['last_ok_at'] else 'never' }}</td>
         <td class="muted small" data-label="Last run">{{ (h['last_run'] or '-')[:16].replace('T',' ') }}</td>
         <td class="muted small" data-label="Note">{{ h['message'] }}</td>
       </tr>

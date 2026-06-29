@@ -32,7 +32,8 @@
       <option value="year_desc" {{ 'selected' if filters.sort == 'year_desc' }}>Year: newest</option>
       <option value="year_asc" {{ 'selected' if filters.sort == 'year_asc' }}>Year: oldest</option>
       <option value="km_asc" {{ 'selected' if filters.sort == 'km_asc' }}>KM: lowest</option>
-      <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Recently scraped</option>
+      <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Added: newest</option>
+      <option value="oldest" {{ 'selected' if filters.sort == 'oldest' }}>Added: oldest</option>
     </select>
   </div>
   <div class="filter-line range-line">
@@ -67,18 +68,22 @@
 <div class="table-wrap">
   <table class="data-table">
     <thead>
-      <tr><th></th><th>Vehicle</th><th>Year</th><th>KM</th><th>Fuel</th><th>Area</th><th>Source</th><th class="num">Asking</th><th></th><th></th></tr>
+      <tr><th></th><th>Vehicle</th><th>Year</th><th>KM</th><th>Fuel</th><th>Area</th><th>Source</th><th>Added</th><th class="num">Asking</th><th></th><th></th></tr>
     </thead>
     <tbody>
       {% for v in deals %}
       <tr>
         <td class="thumb-cell">{{ vehicle_photo(v, "photo-thumb") }}</td>
-        <td data-label="Vehicle"><strong>{{ v['make'] }} {{ v['model'] }}</strong>{% if v['variant'] %}<br><span class="muted small">{{ v['variant'] }}</span>{% endif %}</td>
+        <td data-label="Vehicle">
+          {% if v['fresh'] %}<span class="tag-new">NEW</span> {% endif %}
+          <strong>{{ v['make'] }} {{ v['model'] }}</strong>{% if v['variant'] %}<br><span class="muted small">{{ v['variant'] }}</span>{% endif %}
+        </td>
         <td data-label="Year">{{ v['year'] }}</td>
         <td data-label="KM">{{ v['km']|km }}</td>
         <td data-label="Fuel">{{ v['fuel'] }}</td>
         <td data-label="Area">{{ v['location'] }}</td>
         <td data-label="Source"><span class="src">{{ v['source'] }}</span></td>
+        <td data-label="Added" class="muted small">{{ v['scraped_at']|ago }}</td>
         <td class="num" data-label="Asking"><strong>{{ v['listed_price']|inr }}</strong></td>
         <td class="cell-action">
           {% if v['source_url'] %}

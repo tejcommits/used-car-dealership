@@ -49,6 +49,26 @@ def create_app(config_class=Config):
             s = head + "," + tail
         return "₹" + s
 
+    @app.template_filter("ago")
+    def ago(value):
+        """Turn an ISO timestamp into '2d ago', '5h ago', 'just now'."""
+        if not value:
+            return "-"
+        from datetime import datetime
+        try:
+            t = datetime.fromisoformat(str(value))
+        except ValueError:
+            return "-"
+        secs = (datetime.now() - t).total_seconds()
+        if secs < 90:
+            return "just now"
+        if secs < 3600:
+            return f"{int(secs // 60)}m ago"
+        if secs < 86400:
+            return f"{int(secs // 3600)}h ago"
+        days = int(secs // 86400)
+        return "1 day ago" if days == 1 else f"{days} days ago"
+
     @app.template_filter("km")
     def km(value):
         if value is None or value == "":

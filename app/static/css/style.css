@@ -190,6 +190,7 @@ body.admin { background: #eef0f3; }
 .data-table tr.done td { opacity: .5; }
 
 .src { font-size: 12px; background: #eef1f5; padding: 2px 8px; border-radius: 6px; color: var(--ink-soft); }
+.tag-new { display: inline-block; background: var(--green); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .5px; padding: 2px 7px; border-radius: 5px; vertical-align: middle; }
 .margin { color: var(--green); font-weight: 700; }
 
 .badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: #eef1f5; color: var(--ink-soft); }

@@ -74,8 +74,9 @@ def deals():
     sql += " ORDER BY " + {
         "price_asc": "listed_price ASC", "price_desc": "listed_price DESC",
         "year_desc": "year DESC", "year_asc": "year ASC",
-        "km_asc": "km ASC", "newest": "scraped_at DESC",
-    }.get(f["sort"], "listed_price ASC")
+        "km_asc": "km ASC",
+        "newest": "fresh DESC, scraped_at DESC", "oldest": "scraped_at ASC",
+    }.get(f["sort"], "fresh DESC, listed_price ASC")
 
     deals = db.execute(sql, params).fetchall()
 
@@ -327,6 +328,10 @@ def _scrape_worker(db_path, job_id, filters):
 
     def count():
         return conn.execute("SELECT COUNT(*) FROM vehicles WHERE status='scraped'").fetchone()[0]
+
+    # clear last scrape's NEW tags; only this run's new inserts will be flagged
+    conn.execute("UPDATE vehicles SET fresh=0")
+    conn.commit()
 
     summary, total_new = [], 0
     try:

@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     description   TEXT,
 
     featured      INTEGER DEFAULT 0,
+    fresh         INTEGER DEFAULT 0,     -- newly added in the most recent scrape
     scraped_at    TEXT,
     published_at  TEXT,
     UNIQUE(source, external_id)
@@ -111,6 +112,10 @@ def init_db():
     """Create tables if they do not exist. Safe to run repeatedly."""
     db = sqlite3.connect(current_app.config["DATABASE"])
     db.executescript(SCHEMA)
+    # migrate older databases that predate the 'fresh' column
+    cols = [r[1] for r in db.execute("PRAGMA table_info(vehicles)").fetchall()]
+    if "fresh" not in cols:
+        db.execute("ALTER TABLE vehicles ADD COLUMN fresh INTEGER DEFAULT 0")
     db.commit()
     db.close()
 
@@ -173,6 +178,9 @@ def upsert_vehicle(db, row):
     ]
     values = [row.get(c) for c in cols]
     values[cols.index("scraped_at")] = now()
+    # newly inserted listings are flagged 'fresh' so the deals page can tag them NEW
+    cols = cols + ["fresh"]
+    values = values + [1]
     placeholders = ",".join("?" * len(cols))
     cur = db.execute(
         f"INSERT INTO vehicles ({','.join(cols)}) VALUES ({placeholders})", values
