@@ -97,6 +97,7 @@ def create_app(config_class=Config):
         return {
             "business_name": app.config["BUSINESS_NAME"],
             "whatsapp_number": app.config["WHATSAPP_NUMBER"],
+            "whatsapp_message": "Hello. I'm looking to buy a second hand car.",
             "asset_v": asset_v,
         }
 

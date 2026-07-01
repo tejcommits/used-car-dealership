@@ -16,7 +16,7 @@
         </a>
         <nav class="px-nav">
           <a class="px-back" href="{{ url_for('public.home') }}">← All cars</a>
-          <a class="px-wa" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="px-wa" href="https://wa.me/{{ whatsapp_number }}?text={{ whatsapp_message|urlencode }}" target="_blank" rel="noopener">WhatsApp</a>
         </nav>
       </header>
 
@@ -144,7 +144,7 @@
 
       <footer class="px-foot">
         <span>{{ business_name }} · Pune</span>
-        <span><a href="https://wa.me/{{ whatsapp_number }}">WhatsApp</a> &nbsp; <a href="{{ url_for('admin.login') }}">Dealer login</a></span>
+        <span><a href="https://wa.me/{{ whatsapp_number }}?text={{ whatsapp_message|urlencode }}">WhatsApp</a> &nbsp; <a href="{{ url_for('admin.login') }}">Dealer login</a></span>
       </footer>
 
     </div>

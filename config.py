@@ -18,7 +18,7 @@ class Config:
 
     BUSINESS_NAME = os.environ.get("BUSINESS_NAME", "AutoLux")
     # Phone in international format without +, e.g. 919226441010
-    WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "919226441010")
+    WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "919021970555")
 
     RUN_SCHEDULER = os.environ.get("RUN_SCHEDULER", "0") == "1"
     SCRAPE_INTERVAL_HOURS = int(os.environ.get("SCRAPE_INTERVAL_HOURS", "12"))

@@ -15,6 +15,6 @@ services:
       - key: BUSINESS_NAME
         value: AutoLux
       - key: WHATSAPP_NUMBER
-        value: "919226441010"
+        value: "919021970555"
       - key: PYTHON_VERSION
         value: "3.11.9"
