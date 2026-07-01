@@ -10,6 +10,10 @@ services:
     envVars:
       - key: ADMIN_PASSWORD
         sync: false          # set your own in the Render dashboard
+      - key: DATABASE_URL
+        sync: false          # Neon Postgres connection string; set in the dashboard.
+                             # When present the app uses Postgres (data persists);
+                             # without it, it falls back to an ephemeral SQLite file.
       - key: SECRET_KEY
         generateValue: true
       - key: BUSINESS_NAME
