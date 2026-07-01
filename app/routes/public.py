@@ -76,7 +76,7 @@ def find_car():
              (f.get("timeline") or "").strip(), (f.get("notes") or "").strip(), now()),
         )
         db.commit()
-        flash("Got it. We'll start the hunt and call you back soon.", "find_car_ok")
+        flash("We start looking today. Expect a call, usually the same day.", "find_car_ok")
         return redirect(url_for("public.find_car"))
 
     makes = [r["make"] for r in db.execute(
