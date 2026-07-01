@@ -236,14 +236,46 @@ html:has(.px-page), body:has(.px-page) { background: oklch(0.976 0.007 85); marg
 .px-fineprint { margin: 0.3rem 0 0; font-size: 0.76rem; color: var(--muted); text-align: center; line-height: 1.6; }
 
 /* ---------------- find-car layout ---------------- */
-.px-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2.5rem, 6vw, 5.5rem); align-items: center;
+.px-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2.5rem, 6vw, 5.5rem); align-items: start;
   padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(3rem, 6vw, 5rem); }
+
+/* ambient video card behind the copy — quiet showroom, no actor */
+.px-video-panel {
+  position: relative; border-radius: 16px; overflow: hidden; min-height: clamp(340px, 42vw, 460px);
+  box-shadow: var(--shadow-lg);
+}
+.px-video-panel__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.px-video-panel__scrim { position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(0deg, oklch(0.23 0.055 262 / 0.92) 0%, oklch(0.23 0.055 262 / 0.55) 42%, oklch(0.23 0.055 262 / 0.12) 75%); }
+.px-video-panel__copy { position: relative; z-index: 2; padding: clamp(1.6rem, 3vw, 2.4rem);
+  display: flex; flex-direction: column; justify-content: flex-end; min-height: 100%; }
+.px-video-panel .px-kicker { color: var(--gold); }
+.px-video-panel .px-kicker::before { background: var(--gold); }
+.px-video-panel .px-headline { color: #fff; max-width: 12ch; }
+.px-video-panel .px-sub { color: oklch(1 0 0 / 0.86); max-width: 40ch; }
+
 .px-assurances { list-style: none; margin: 2.2rem 0 0; padding: 0; display: grid; gap: 1.3rem; }
 .px-assurances li { display: flex; gap: 0.9rem; align-items: flex-start; }
 .px-assurances svg { flex: 0 0 auto; width: 19px; height: 19px; margin-top: 1px; color: var(--gold-ink); }
 .px-assurances b { font-weight: 500; color: var(--navy); font-size: 0.98rem; }
 .px-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
   padding: clamp(1.5rem, 3vw, 2.2rem); box-shadow: var(--shadow); }
+
+/* confirmation state — shown in place of the form after a successful submit */
+.px-confirm { display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 0.6rem; padding-top: clamp(2.2rem, 5vw, 3.2rem); padding-bottom: clamp(2.2rem, 5vw, 3.2rem); }
+.px-confirm__silhouette { width: 100%; max-width: 220px; margin-bottom: 0.6rem; perspective: 500px; }
+.px-confirm__turntable {
+  color: var(--navy); animation: px-turntable 7s linear infinite;
+  transform-style: preserve-3d;
+}
+.px-confirm__turntable svg { display: block; width: 100%; height: auto; }
+@keyframes px-turntable { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+.px-confirm__title { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; color: var(--navy); margin: 0; }
+.px-confirm__msg { color: var(--ink-soft); max-width: 34ch; line-height: 1.6; margin: 0 0 0.6rem; }
+
+@media (max-width: 900px) { .px-video-panel { min-height: 260px; } }
+@media (prefers-reduced-motion: reduce) { .px-confirm__turntable { animation: none; } }
 .px-panel-head { margin-bottom: 1.6rem; }
 .px-panel-head h2 { font-family: var(--serif); font-weight: 500; font-size: 1.4rem; color: var(--navy); margin: 0; }
 .px-panel-head p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.9rem; }

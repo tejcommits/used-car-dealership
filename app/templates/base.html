@@ -10,7 +10,7 @@
 <body class="{% block body_class %}{% endblock %}">
   <div class="flash-wrap">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, msg in messages %}
+      {% for category, msg in messages if category != 'find_car_ok' %}
         <div class="flash flash-{{ category }}">{{ msg }}</div>
       {% endfor %}
     {% endwith %}

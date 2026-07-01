@@ -20,15 +20,26 @@
         </nav>
       </header>
 
+      {% set fc_msgs = get_flashed_messages(category_filter=['find_car_ok']) %}
+
       <main class="px-hero">
 
         <section class="px-narrative">
-          <p class="px-kicker">Trusted used cars · Pune</p>
-          <h1 class="px-headline">Let's find your car.</h1>
-          <p class="px-sub">
-            Tell us the make, your budget, and what matters to you. We find you a used car that
-            fits, and give you the honest rundown on it before you decide.
-          </p>
+          <div class="px-video-panel">
+            <video class="px-video-panel__media" autoplay muted loop playsinline
+                   poster="{{ url_for('static', filename='img/logo.svg') }}">
+              <source src="{{ url_for('static', filename='video/showroom.mp4') }}" type="video/mp4">
+            </video>
+            <div class="px-video-panel__scrim"></div>
+            <div class="px-video-panel__copy">
+              <p class="px-kicker">Trusted used cars · Pune</p>
+              <h1 class="px-headline">Let's find your car.</h1>
+              <p class="px-sub">
+                Tell us the make, your budget, and what matters to you. We find you a used car that
+                fits, and give you the honest rundown on it before you decide.
+              </p>
+            </div>
+          </div>
 
           <ul class="px-assurances">
             <li>
@@ -46,6 +57,22 @@
           </ul>
         </section>
 
+        {% if fc_msgs %}
+        <section class="px-panel px-confirm">
+          <div class="px-confirm__silhouette" aria-hidden="true">
+            <div class="px-confirm__turntable">
+              <svg viewBox="0 0 200 90" fill="currentColor">
+                <path d="M18 62c-8 0-14-5-14-12s6-11 13-11l10-1 14-19c4-5 10-8 17-8h46c8 0 15 4 19 10l11 17 17 3c8 1 14 7 14 15v6c0 3-2 5-5 5h-9a17 17 0 01-34 0H72a17 17 0 01-34 0H23a5 5 0 01-5-5z"/>
+                <circle cx="55" cy="64" r="10" fill="var(--paper)"/>
+                <circle cx="141" cy="64" r="10" fill="var(--paper)"/>
+              </svg>
+            </div>
+          </div>
+          <h2 class="px-confirm__title">You're on the list.</h2>
+          <p class="px-confirm__msg">{{ fc_msgs[0] }}</p>
+          <a class="px-hero-link" href="{{ url_for('public.home') }}">Back to all cars</a>
+        </section>
+        {% else %}
         <section class="px-panel">
           <div class="px-panel-head">
             <h2>Start your search</h2>
@@ -140,6 +167,7 @@
             <button class="px-submit" type="submit">Find me a car</button>
           </form>
         </section>
+        {% endif %}
       </main>
 
       <footer class="px-foot">

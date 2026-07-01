@@ -62,8 +62,7 @@ def find_car():
         name = (f.get("name") or "").strip()
         phone = (f.get("phone") or "").strip()
         if not name or not phone:
-            flash("Add your name and a phone number so we can call you back. "
-                  "/ अपना नाम और फ़ोन नंबर भरें ताकि हम आपको कॉल कर सकें।", "error")
+            flash("Add your name and a phone number so we can call you back.", "error")
             return redirect(url_for("public.find_car"))
         db.execute(
             """INSERT INTO leads
@@ -77,8 +76,7 @@ def find_car():
              (f.get("timeline") or "").strip(), (f.get("notes") or "").strip(), now()),
         )
         db.commit()
-        flash("Got it. We'll start the hunt and call you back soon. "
-              "/ मिल गया। हम आपकी कार ढूँढना शुरू कर रहे हैं, जल्द कॉल करेंगे।", "success")
+        flash("Got it. We'll start the hunt and call you back soon.", "find_car_ok")
         return redirect(url_for("public.find_car"))
 
     makes = [r["make"] for r in db.execute(
