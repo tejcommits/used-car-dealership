@@ -56,7 +56,7 @@ class BaseScraper:
         If `filters` is given, only listings matching them are stored — this is
         what the dealer's "Scrape now" dialog passes (make, year, km, price...).
         """
-        from ..db import upsert_vehicle  # local import to avoid a cycle
+        from ..db import upsert_vehicle, stamp_seen  # local import to avoid a cycle
 
         rows, error = [], None
         try:
@@ -66,6 +66,10 @@ class BaseScraper:
                 time.sleep(self.request_delay)
         except Exception as exc:  # network error, blocked, markup change
             error = f"{type(exc).__name__}: {exc}"
+
+        # Every listing this fetch actually found is still live on the source,
+        # regardless of the dealer's save filter — stamp that before filtering.
+        stamp_seen(db, self.name, (r.get("external_id") for r in rows))
 
         cap = (filters or {}).get("max_per_source")
         saved = 0

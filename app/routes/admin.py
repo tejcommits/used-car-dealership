@@ -55,7 +55,7 @@ def deals():
     f = {k: a.get(k, "").strip() for k in
          ("q", "make", "source", "fuel", "area", "sort", "min_year", "max_km", "max_price")}
 
-    sql = "SELECT * FROM vehicles WHERE status='scraped'"
+    sql = "SELECT * FROM vehicles WHERE status='scraped' AND delisted_at IS NULL"
     params = []
     if f["q"]:
         # every word in the search must appear somewhere (make/model/variant/colour/area/title)
@@ -88,11 +88,11 @@ def deals():
 
     def distinct(col):
         return [r[0] for r in db.execute(
-            f"SELECT DISTINCT {col} FROM vehicles WHERE status='scraped' "
+            f"SELECT DISTINCT {col} FROM vehicles WHERE status='scraped' AND delisted_at IS NULL "
             f"AND {col} IS NOT NULL AND {col} != '' ORDER BY {col}").fetchall()]
 
     b = db.execute("SELECT MIN(listed_price), MAX(listed_price), MIN(year), MAX(year) "
-                   "FROM vehicles WHERE status='scraped'").fetchone()
+                   "FROM vehicles WHERE status='scraped' AND delisted_at IS NULL").fetchone()
     bounds = {"pmin": b[0] or 0, "pmax": b[1] or 2000000,
               "ymin": b[2] or 2008, "ymax": b[3] or 2026}
 
@@ -296,6 +296,38 @@ def scrapers():
                            makes=makes, models_by_make=models_by_make, apify=apify)
 
 
+@bp.route("/deals/cleanup", methods=["POST"])
+@login_required
+def cleanup_deals():
+    """Re-check every source and clear out deals that vanished from it.
+
+    A listing that's sold or delisted stops showing up in a fresh scrape, so
+    anything not seen this pass gets hidden from Deals; anything hidden for
+    a week or more is removed for good. Runs synchronously — it's a manual,
+    occasional admin action, not the public site.
+    """
+    from ..scrapers.sources import ALL_SOURCES
+    from ..db import sweep_delisted
+
+    db = get_db()
+    start_ts = now()
+    filters = {"max_per_source": 60}  # match the default full-scrape cap, keeps Apify cost predictable
+    for cls in ALL_SOURCES:
+        try:
+            cls().run(db, filters)
+        except Exception:
+            pass  # a broken source shouldn't block the rest; health already records it
+
+    hidden, purged = sweep_delisted(db, [cls.name for cls in ALL_SOURCES], start_ts)
+    bits = []
+    if hidden:
+        bits.append(f"{hidden} no longer on their source (hidden from Deals)")
+    if purged:
+        bits.append(f"{purged} removed for good (hidden 7+ days)")
+    flash("Cleaned up deals. " + ("; ".join(bits) if bits else "Nothing to clear, everything's current."), "success")
+    return redirect(url_for("admin.deals"))
+
+
 @bp.route("/scrapers/run", methods=["POST"])
 @login_required
 def run_scrapers():
@@ -388,7 +420,7 @@ def _stats(db):
     def one(sql):
         return db.execute(sql).fetchone()[0]
     return {
-        "deals": one("SELECT COUNT(*) FROM vehicles WHERE status='scraped'"),
+        "deals": one("SELECT COUNT(*) FROM vehicles WHERE status='scraped' AND delisted_at IS NULL"),
         "published": one("SELECT COUNT(*) FROM vehicles WHERE status='published'"),
         "sold": one("SELECT COUNT(*) FROM vehicles WHERE status='sold'"),
         "enquiries": one("SELECT COUNT(*) FROM enquiries WHERE handled=0"),

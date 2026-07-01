@@ -68,6 +68,9 @@ class CarTradeScraper(BaseScraper):
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
 
+        from ...db import stamp_seen
+        stamp_seen(db, self.name, (r.get("external_id") for r in rows))
+
         cap = (filters or {}).get("max_per_source") or 40
         saved = 0
         for row in rows:

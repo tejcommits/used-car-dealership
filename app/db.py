@@ -6,7 +6,7 @@ a freelancer to inherit. If volume ever outgrows it, the schema moves to
 Postgres without changing the route code much.
 """
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import current_app, g
 
 SCHEMA = """
@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS vehicles (
     color         TEXT,
     scraped_at    TEXT,
     published_at  TEXT,
+    last_seen_at  TEXT,                  -- stamped whenever an unfiltered scrape still finds it
+    delisted_at   TEXT,                  -- set when an unfiltered scrape no longer finds it
     UNIQUE(source, external_id)
 );
 
@@ -136,6 +138,10 @@ def init_db():
         db.execute("ALTER TABLE vehicles ADD COLUMN fresh INTEGER DEFAULT 0")
     if "color" not in cols:
         db.execute("ALTER TABLE vehicles ADD COLUMN color TEXT")
+    if "last_seen_at" not in cols:
+        db.execute("ALTER TABLE vehicles ADD COLUMN last_seen_at TEXT")
+    if "delisted_at" not in cols:
+        db.execute("ALTER TABLE vehicles ADD COLUMN delisted_at TEXT")
     db.commit()
     db.close()
 
@@ -223,3 +229,51 @@ def upsert_vehicle(db, row):
         f"INSERT INTO vehicles ({','.join(cols)}) VALUES ({placeholders})", values
     )
     return cur.lastrowid
+
+
+def stamp_seen(db, source, external_ids):
+    """Mark scraped listings as still present on the source site.
+
+    Called with every external_id found in a scraper's raw fetch (before the
+    dealer's save filters/cap are applied), so a narrow "Scrape now" filter
+    never makes an untouched listing look delisted. Un-delists anything that
+    reappears.
+    """
+    ids = [str(x) for x in external_ids if x]
+    if not ids:
+        return
+    marks = ",".join("?" * len(ids))
+    db.execute(
+        f"""UPDATE vehicles SET last_seen_at=?, delisted_at=NULL
+            WHERE source=? AND status='scraped' AND external_id IN ({marks})""",
+        [now(), source] + ids,
+    )
+
+
+def sweep_delisted(db, sources, cutoff_before):
+    """Soft-hide scraped listings a full sweep didn't find, and purge
+    listings that have been soft-hidden for a week or more.
+
+    `cutoff_before` is the timestamp the sweep started at: anything from
+    `sources` not stamped by stamp_seen() since then is gone from its site.
+    Returns (soft_hidden, purged) counts.
+    """
+    if not sources:
+        return 0, 0
+    marks = ",".join("?" * len(sources))
+    cur = db.execute(
+        f"""UPDATE vehicles SET delisted_at=?
+            WHERE status='scraped' AND delisted_at IS NULL AND source IN ({marks})
+              AND (last_seen_at IS NULL OR last_seen_at < ?)""",
+        [now(), *sources, cutoff_before],
+    )
+    hidden = cur.rowcount
+
+    week_ago = (datetime.now() - timedelta(days=7)).isoformat(timespec="seconds")
+    cur = db.execute(
+        "DELETE FROM vehicles WHERE status='scraped' AND delisted_at IS NOT NULL AND delisted_at <= ?",
+        (week_ago,),
+    )
+    purged = cur.rowcount
+    db.commit()
+    return hidden, purged

@@ -27,7 +27,7 @@ class SpinnyScraper(BaseScraper):
         return []
 
     def run(self, db, filters=None):
-        from ...db import upsert_vehicle
+        from ...db import upsert_vehicle, stamp_seen
         from ..base import match_filters
 
         rows, error = [], None
@@ -45,6 +45,10 @@ class SpinnyScraper(BaseScraper):
                     rows.append(self._to_row(r))
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
+
+        # Skipped-as-sold rows above never make it into `rows`, so they never
+        # get stamped seen and age out via the same delisted sweep.
+        stamp_seen(db, self.name, (r.get("external_id") for r in rows))
 
         cap = (filters or {}).get("max_per_source")
         saved = 0

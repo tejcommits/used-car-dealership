@@ -53,6 +53,9 @@ class FacebookScraper(BaseScraper):
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
 
+        from ...db import stamp_seen
+        stamp_seen(db, self.name, (r.get("external_id") for r in rows))
+
         saved = 0
         for row in rows:
             if not row.get("external_id") or not match_filters(row, filters):

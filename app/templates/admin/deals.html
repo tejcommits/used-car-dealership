@@ -6,6 +6,10 @@
     <h1>Deals from the market</h1>
     <p class="muted">{{ deals|length }} listing{{ 's' if deals|length != 1 }} shown · {{ stats.deals }} scraped across your sources.</p>
   </div>
+  <form method="post" action="{{ url_for('admin.cleanup_deals') }}"
+        onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Cleaning up…';">
+    <button type="submit" class="btn-sm btn-ghost" title="Re-checks every source and clears deals that sold or came down. Uses a small amount of Apify credit and can take a minute.">Clean up deals</button>
+  </form>
 </div>
 
 <form class="filters-bar" method="get" id="dealFilters">
