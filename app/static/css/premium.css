@@ -236,24 +236,31 @@ html:has(.px-page), body:has(.px-page) { background: oklch(0.976 0.007 85); marg
 .px-fineprint { margin: 0.3rem 0 0; font-size: 0.76rem; color: var(--muted); text-align: center; line-height: 1.6; }
 
 /* ---------------- find-car layout ---------------- */
-.px-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2.5rem, 6vw, 5.5rem); align-items: stretch;
+.px-hero { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2.5rem, 6vw, 5.5rem); align-items: center;
   padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(3rem, 6vw, 5rem); }
-.px-narrative { display: flex; }
+.px-narrative { display: flex; flex-direction: column; }
 
-/* ambient video card behind the copy — quiet, ordinary dealership, no actor of the wrong kind */
-.px-video-panel {
-  position: relative; width: 100%; border-radius: 16px; overflow: hidden;
-  min-height: clamp(460px, 50vw, 620px); box-shadow: var(--shadow-lg);
-}
-.px-video-panel__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
-.px-video-panel__scrim { position: absolute; inset: 0; z-index: 1;
-  background: linear-gradient(0deg, oklch(0.23 0.055 262 / 0.94) 0%, oklch(0.23 0.055 262 / 0.65) 46%, oklch(0.23 0.055 262 / 0.22) 78%); }
-.px-video-panel__copy { position: relative; z-index: 2; padding: clamp(1.8rem, 3vw, 2.6rem);
-  display: flex; flex-direction: column; justify-content: flex-end; min-height: 100%; }
-.px-video-panel .px-kicker { color: var(--gold); }
-.px-video-panel .px-kicker::before { background: var(--gold); }
-.px-video-panel .px-headline { color: #fff; max-width: 14ch; }
-.px-video-panel .px-sub { color: oklch(1 0 0 / 0.86); max-width: 42ch; }
+/* full-page ambient video, not boxed — behind the whole find-a-car page */
+.px-fc-page { position: relative; }
+.px-fc-bg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.px-fc-bg-scrim { position: fixed; inset: 0; z-index: 1;
+  background: linear-gradient(100deg, oklch(0.23 0.055 262 / 0.88) 0%, oklch(0.23 0.055 262 / 0.62) 45%, oklch(0.23 0.055 262 / 0.42) 100%); }
+.px-fc-page .px-shell { position: relative; z-index: 2; }
+
+.px-fc-top .px-brand-word { color: #fff; }
+.px-fc-top .px-nav a { color: oklch(1 0 0 / 0.82); }
+.px-fc-top .px-nav a:hover { color: #fff; }
+.px-fc-top .px-back { color: oklch(1 0 0 / 0.82); }
+.px-fc-top .px-back:hover { color: #fff; }
+.px-fc-top .px-wa { color: #fff; border-color: oklch(1 0 0 / 0.4); }
+.px-fc-top .px-wa:hover { border-color: #fff; }
+
+.px-fc-narrative .px-kicker { color: var(--gold); }
+.px-fc-narrative .px-kicker::before { background: var(--gold); }
+.px-fc-narrative .px-headline { color: #fff; max-width: 14ch; }
+.px-fc-narrative .px-sub { color: oklch(1 0 0 / 0.9); max-width: 42ch; }
+
+.px-fc-panel { box-shadow: 0 30px 70px -30px oklch(0.05 0.02 262 / 0.7); }
 
 .px-assurances { list-style: none; margin: 2.2rem 0 0; padding: 0; display: grid; gap: 1.3rem; }
 .px-assurances li { display: flex; gap: 0.9rem; align-items: flex-start; }
@@ -291,7 +298,6 @@ html:has(.px-page), body:has(.px-page) { background: oklch(0.976 0.007 85); marg
 .px-confirm-full .px-cta { color: #fff; border-color: oklch(1 0 0 / 0.4); }
 .px-confirm-full .px-cta:hover { background: #fff; color: var(--navy); border-color: #fff; }
 
-@media (max-width: 900px) { .px-video-panel { min-height: 520px; } }
 .px-panel-head { margin-bottom: 1.6rem; }
 .px-panel-head h2 { font-family: var(--serif); font-weight: 500; font-size: 1.4rem; color: var(--navy); margin: 0; }
 .px-panel-head p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.9rem; }

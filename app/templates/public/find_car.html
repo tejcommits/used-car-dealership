@@ -29,13 +29,16 @@
   </section>
 </div>
 {% else %}
-<div class="px-page">
-  {% include "partials/px_backdrop.html" %}
+<div class="px-page px-fc-page">
+  <video class="px-fc-bg" autoplay muted loop playsinline>
+    <source src="{{ url_for('static', filename='video/showroom.mp4') }}" type="video/mp4">
+  </video>
+  <div class="px-fc-bg-scrim"></div>
 
   <div class="px-shell">
     <div class="px-container">
 
-      <header class="px-top">
+      <header class="px-top px-fc-top">
         <a class="px-brand" href="{{ url_for('public.home') }}">
           <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="">
           <span class="px-brand-word">{{ business_name }}</span>
@@ -46,42 +49,33 @@
         </nav>
       </header>
 
-      <main class="px-hero">
+      <main class="px-hero px-fc-hero">
 
-        <section class="px-narrative">
-          <div class="px-video-panel">
-            <video class="px-video-panel__media" autoplay muted loop playsinline
-                   poster="{{ url_for('static', filename='img/logo.svg') }}">
-              <source src="{{ url_for('static', filename='video/showroom.mp4') }}" type="video/mp4">
-            </video>
-            <div class="px-video-panel__scrim"></div>
-            <div class="px-video-panel__copy">
-              <p class="px-kicker">Trusted used cars · Pune</p>
-              <h1 class="px-headline">What car do you need?</h1>
-              <p class="px-sub">
-                Give us the make and your budget. We'll track down a car that fits and tell you
-                straight what shape it's in.
-              </p>
+        <section class="px-narrative px-fc-narrative">
+          <p class="px-kicker">Trusted used cars · Pune</p>
+          <h1 class="px-headline">What car do you need?</h1>
+          <p class="px-sub">
+            Give us the make and your budget. We'll track down a car that fits and tell you
+            straight what shape it's in.
+          </p>
 
-              <ul class="px-assurances px-assurances--overlay">
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
-                  <div><b>We search every listing in Pune for you</b></div>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 12h4l2 5 4-12 2 7h6"/></svg>
-                  <div><b>A full condition report before you commit</b></div>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                  <div><b>One person, from first call to the keys</b></div>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <ul class="px-assurances px-assurances--overlay">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+              <div><b>We search every listing in Pune for you</b></div>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 12h4l2 5 4-12 2 7h6"/></svg>
+              <div><b>A full condition report before you commit</b></div>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <div><b>One person, from first call to the keys</b></div>
+            </li>
+          </ul>
         </section>
 
-        <section class="px-panel">
+        <section class="px-panel px-fc-panel">
           <div class="px-panel-head">
             <h2>Start your search</h2>
             <p>Takes a minute. We call you back, usually the same day.</p>
