@@ -1,6 +1,6 @@
-# Pune Auto Deals
+# Used Car Dealership (AutoLux)
 
-A two-sided platform for a used-vehicle dealer in Pune.
+A two-sided platform for a used-vehicle dealer in Pune & Mumbai.
 
 - **Admin (private):** a deal-finder fed by scrapers across the major Pune
   listing sites. Only the dealer sees these. He spots a good deal, buys the
