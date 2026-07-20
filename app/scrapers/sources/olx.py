@@ -53,8 +53,9 @@ class OlxScraper(BaseScraper):
                 saved += 1
 
         ok = error is None and len(rows) >= self.expected_min
-        record_health(db, self.name, ok, len(rows), self.expected_min,
-                       error or ("ok" if ok else "returned fewer rows than expected"))
+        note = error or ("ok" if ok else
+                         "parked — OLX blocks server IPs; needs a residential proxy (planned)")
+        record_health(db, self.name, ok, len(rows), self.expected_min, note)
         db.commit()
         return saved, ok, error
 
