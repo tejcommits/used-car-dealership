@@ -375,12 +375,21 @@ def scrape_status(job_id):
 
 
 def _scrape_worker(db_path, job_id, filters):
-    """Runs in a background thread with its own DB connection."""
-    from ..scrapers.sources import ALL_SOURCES
+    """Runs in a background thread with its own DB connection.
 
-    conn = sqlite3.connect(db_path, timeout=30)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA busy_timeout = 8000")
+    A thread can't reuse the request's connection, so it opens a fresh one.
+    In production that must be Postgres (Neon) — the same store the job row and
+    scraped vehicles live in — not a throwaway local SQLite file.
+    """
+    from ..scrapers.sources import ALL_SOURCES
+    from ..db import USING_PG, connect_worker
+
+    if USING_PG:
+        conn = connect_worker()
+    else:
+        conn = sqlite3.connect(db_path, timeout=30)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout = 8000")
 
     def count():
         return conn.execute("SELECT COUNT(*) FROM vehicles WHERE status='scraped'").fetchone()[0]

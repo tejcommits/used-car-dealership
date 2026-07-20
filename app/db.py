@@ -228,6 +228,15 @@ def _connect_pg():
     return _PgConn(raw)
 
 
+def connect_worker():
+    """A standalone Postgres connection for a background thread.
+
+    Threads can't share the request-scoped connection, so the scrape worker
+    opens its own. Only valid when USING_PG; callers guard on that.
+    """
+    return _connect_pg()
+
+
 # -----------------------------------------------------------------------------
 
 
