@@ -13,9 +13,13 @@ WhatsApp message when you want alerts to reach a phone.
 
 
 def check_health(db):
-    """Return the rows for any source that is not currently 'ok'."""
+    """Return the rows for any source that is actually broken.
+
+    'paused' is a deliberate, known-off source (e.g. OLX pending a residential
+    proxy) — not a break, so it doesn't raise an alert.
+    """
     rows = db.execute("SELECT * FROM scraper_health").fetchall()
-    return [r for r in rows if r["status"] != "ok"]
+    return [r for r in rows if r["status"] not in ("ok", "paused")]
 
 
 def report_broken(db):

@@ -53,9 +53,13 @@ class OlxScraper(BaseScraper):
                 saved += 1
 
         ok = error is None and len(rows) >= self.expected_min
+        # No hard error, just no data → this is the known "parked" state (OLX
+        # blocks server IPs), shown as a deliberate pause, not a break/alert.
+        parked = not ok and error is None
         note = error or ("ok" if ok else
                          "parked — OLX blocks server IPs; needs a residential proxy (planned)")
-        record_health(db, self.name, ok, len(rows), self.expected_min, note)
+        record_health(db, self.name, ok, len(rows), self.expected_min, note,
+                       status="paused" if parked else None)
         db.commit()
         return saved, ok, error
 

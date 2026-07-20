@@ -435,7 +435,7 @@ def _stats(db):
         "sold": one("SELECT COUNT(*) FROM vehicles WHERE status='sold'"),
         "enquiries": one("SELECT COUNT(*) FROM enquiries WHERE handled=0"),
         "leads": one("SELECT COUNT(*) FROM leads WHERE handled=0"),
-        "broken": one("SELECT COUNT(*) FROM scraper_health WHERE status!='ok'"),
+        "broken": one("SELECT COUNT(*) FROM scraper_health WHERE status NOT IN ('ok','paused')"),
     }
 
 

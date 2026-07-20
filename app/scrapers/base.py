@@ -148,13 +148,15 @@ def match_filters(row, filters):
     return True
 
 
-def record_health(db, source, ok, items_found, expected_min, message):
+def record_health(db, source, ok, items_found, expected_min, message, status=None):
     ts = now()
     existing = db.execute(
         "SELECT source, last_ok_at FROM scraper_health WHERE source=?", (source,)
     ).fetchone()
     last_ok = ts if ok else (existing["last_ok_at"] if existing else None)
-    status = "ok" if ok else "broken"
+    # 'paused' is a deliberate, known-off state (not a break) — callers pass it
+    # explicitly; otherwise health is just ok/broken.
+    status = status or ("ok" if ok else "broken")
     if existing:
         db.execute(
             "UPDATE scraper_health SET last_run=?, last_ok_at=?, status=?, "

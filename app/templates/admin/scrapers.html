@@ -198,6 +198,7 @@
         <td data-label="Source"><strong>{{ h['source'] }}</strong></td>
         <td data-label="Status">
           {% if h['status'] == 'ok' %}<span class="badge badge-live">working</span>
+          {% elif h['status'] == 'paused' %}<span class="badge badge-muted">paused</span>
           {% else %}<span class="badge badge-bad">broken</span>{% endif %}
         </td>
         <td class="num" data-label="Found">{{ h['items_found'] }}</td>
